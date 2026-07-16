@@ -1,0 +1,10 @@
+# stage 1: the "builder" — has the full Go toolchain
+FROM golang:1.23 AS builder
+WORKDIR /app
+COPY main.go .
+RUN go mod init app && CGO_ENABLED=0 go build -o server main.go
+
+# stage 2: the runtime — distroless, contains almost nothing but the binary
+FROM gcr.io/distroless/static-debian12
+COPY --from=builder /app/server /server
+CMD ["/server"]
