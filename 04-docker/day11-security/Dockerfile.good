@@ -1,0 +1,23 @@
+# pinned, minimal base (fixes #1)
+FROM python:3.12-slim
+
+# non-root user (security)
+RUN useradd --create-home --shell /usr/sbin/nologin appuser
+
+# WORKDIR first (fixes #4)
+WORKDIR /app
+
+# deps BEFORE code = cached unless requirements change (fixes #6)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# now copy app code (only this layer rebuilds on code change)
+COPY app.py .
+
+# drop to non-root (security)
+USER appuser
+
+EXPOSE 5000
+
+# exec form so app is PID 1 & handles SIGTERM (fixes #7)
+CMD ["python3", "app.py"]
