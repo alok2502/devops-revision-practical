@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web           # this Deployment manages pods with label app=web
+  template:              # the POD TEMPLATE — what each pod looks like
+    metadata:
+      labels:
+        app: web         # pods get this label (must match the selector above)
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27.0     # PINNED version (we'll update this to see a rolling update)
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
