@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-to-web
+spec:
+  podSelector:
+    matchLabels:
+      app: web           # this policy applies to pods labeled app=web
+  policyTypes:
+  - Ingress
+  ingress: []            # empty ingress rules = deny ALL incoming traffic
