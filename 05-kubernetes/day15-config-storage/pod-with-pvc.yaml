@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storage-app
+spec:
+  containers:
+  - name: app
+    image: busybox
+    command: ["sh", "-c", "sleep 3600"]
+    volumeMounts:
+    - name: data
+      mountPath: /data          # mount the storage here
+  volumes:
+  - name: data
+    persistentVolumeClaim:
+      claimName: my-data        # use the PVC we created

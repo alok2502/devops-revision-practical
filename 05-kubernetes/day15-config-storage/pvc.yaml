@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-data
+spec:
+  accessModes:
+    - ReadWriteOnce        # one node can mount read-write (like EBS!)
+  resources:
+    requests:
+      storage: 1Gi
