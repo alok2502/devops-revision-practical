@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hardened
+spec:
+  securityContext:
+    runAsNonRoot: true          # refuse to run as root
+    runAsUser: 1000             # run as uid 1000
+    fsGroup: 2000
+  containers:
+  - name: app
+    image: nginx:1.27.0-alpine
+    securityContext:
+      allowPrivilegeEscalation: false   # can't gain more privileges
+      readOnlyRootFilesystem: true      # filesystem is read-only
+      capabilities:
+        drop: ["ALL"]                   # drop all Linux capabilities
+    volumeMounts:
+    - name: tmp
+      mountPath: /tmp                   # writable scratch (since rootfs is read-only)
+    - name: cache
+      mountPath: /var/cache/nginx
+    - name: run
+      mountPath: /var/run
+  volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
+  - name: run
+    emptyDir: {}
