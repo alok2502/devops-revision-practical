@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: broken3
+spec:
+  containers:
+  - name: app
+    image: nginx:1.27.0
+    ports:
+    - containerPort: 80
+    readinessProbe:
+      httpGet:
+        path: /healthz        # nginx doesn't have this endpoint — probe will fail
+        port: 80
+      initialDelaySeconds: 3
+      periodSeconds: 5
