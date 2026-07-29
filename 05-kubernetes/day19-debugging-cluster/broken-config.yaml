@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: needs-config
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: needs-config
+  template:
+    metadata:
+      labels:
+        app: needs-config
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.27.0
+        envFrom:
+        - configMapRef:
+            name: app-settings      # this ConfigMap does NOT exist
