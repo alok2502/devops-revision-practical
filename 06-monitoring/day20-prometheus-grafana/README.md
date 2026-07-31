@@ -31,3 +31,22 @@ DiskPressure -> Pending pods. Memory red -> OOMKills/evictions.
 ## Full circle
 Monitoring + debugging = same knowledge, 2 directions. Alert on CrashLoop/NotReady/OOM ->
 debug method (describe/exit-code/logs) finds root cause.
+
+## SLI / SLO / SLA & Error Budgets (reliability framing)
+- SLI = Service Level INDICATOR = the MEASUREMENT (e.g. "99.95% requests succeeded",
+  "p95 latency 200ms"). The reading on the gauge. Comes FROM your metrics (PromQL).
+- SLO = Service Level OBJECTIVE = your internal TARGET for an SLI ("aim for 99.9%").
+  Drives engineering decisions.
+- SLA = Service Level AGREEMENT = customer CONTRACT with penalties/refunds if missed.
+  Always looser than SLO (keep SLO stricter for a safety buffer).
+- Ordering: SLA (loosest, customer) >= SLO (stricter, internal) >= actual SLI performance.
+
+## Error Budget (the clever bit)
+- SLO 99.9% => allowed 0.1% unreliability = the error BUDGET you can "spend".
+- Budget remaining -> ship fast, take risks. Budget exhausted -> freeze deploys, fix stability.
+- Objective referee for the dev(ship) vs ops(stable) tension. Data-driven, not arguing.
+- "Nines": 99.9% ~= 43min/month down, 99.99% ~= 4.3min, 99.999% ~= 26sec. Each nine = 10x harder.
+  Pick SLO by BUSINESS need — every extra nine costs exponentially more.
+- Burn-rate alert = fires when error budget is being consumed too fast
+  (saw kube-apiserver-burnrate.rules yesterday = exactly this).
+- Chain: metrics -> SLI -> SLO target -> error budget -> burn-rate alerts.
