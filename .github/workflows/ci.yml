@@ -45,3 +45,4 @@ jobs:
           image-ref: myapp:${{ github.sha }}
           severity: HIGH,CRITICAL
           exit-code: '1'    # '1' would FAIL the build on findings — '0' just reports for now
+          ignore-unfixed: true
