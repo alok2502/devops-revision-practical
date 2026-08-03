@@ -1,0 +1,44 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. clone the repo onto the runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. LINT stage
+      - name: Lint
+        run: pip install flake8 && flake8 app.py --max-line-length=100 || true
+
+      # 5. TEST stage
+      - name: Run tests
+        run: pytest -v
+
+      # 6. BUILD the Docker image
+      - name: Build Docker image
+        run: docker build -t myapp:${{ github.sha }} .
+
+      # 7. SCAN with Trivy
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: myapp:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: '0'    # '1' would FAIL the build on findings — '0' just reports for now
