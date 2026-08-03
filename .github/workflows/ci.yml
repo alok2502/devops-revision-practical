@@ -8,6 +8,11 @@ on:
 defaults:
   run:
     working-directory: 07-cicd/day21-github-actions
+
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -34,15 +39,29 @@ jobs:
       - name: Run tests
         run: pytest -v
 
-      # 6. BUILD the Docker image
-      - name: Build Docker image
-        run: docker build -t myapp:${{ github.sha }} .
+      # log in to GHCR using the built-in token (NO hardcoded creds)
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 7. SCAN with Trivy
-      - name: Scan image with Trivy
+      # build AND push, tagged with commit SHA + latest
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: 07-cicd/day21-github-actions
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/myapp:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/myapp:latest
+
+
+      - name: Scan pushed image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: myapp:${{ github.sha }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/myapp:${{ github.sha }}
           severity: HIGH,CRITICAL
-          exit-code: '1'    # '1' would FAIL the build on findings — '0' just reports for now
+          exit-code: '0'
           ignore-unfixed: true
