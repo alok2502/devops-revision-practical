@@ -1,0 +1,50 @@
+pipeline {
+    agent any                          // run on any available agent
+
+    environment {
+        IMAGE = "myapp:${env.BUILD_NUMBER}"   // tag with Jenkins build number
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Cloning repository...'
+                // checkout scm   (Jenkins auto-checks out the repo)
+            }
+        }
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'pytest -v || true'
+            }
+        }
+        stage('Build') {
+            steps {
+                echo 'Building Docker image...'
+                sh 'docker build -t ${IMAGE} .'
+            }
+        }
+        stage('Scan') {
+            steps {
+                echo 'Scanning with Trivy...'
+                sh 'trivy image --severity HIGH,CRITICAL ${IMAGE} || true'
+            }
+        }
+        stage('Push') {
+            steps {
+                echo 'Pushing to registry...'
+                // uses credentials stored in Jenkins credential store (not hardcoded)
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo 'Deploying to Kubernetes...'
+            }
+        }
+    }
+
+    post {
+        success { echo 'Pipeline succeeded!' }
+        failure { echo 'Pipeline failed - check the logs' }
+    }
+}

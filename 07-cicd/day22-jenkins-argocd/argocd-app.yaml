@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook                    # the folder in that repo with the manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:                         # AUTO-sync: pull from Git automatically
+      prune: true                      # delete resources removed from Git
+      selfHeal: true                   # revert manual cluster changes (drift correction!)
